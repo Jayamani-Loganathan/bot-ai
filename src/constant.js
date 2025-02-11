@@ -1,0 +1,32 @@
+export const SUBMITTAL_CODES = {
+  ID_MS_SUBMITTAL_CODE: "MS",
+  ID_SD_SUBMITTAL_CODE: "SD",
+  ID_WIR_SUBMITTAL_CODE: "WIR",
+  ID_DPU_SUBMITTAL_CODE: "DPU",
+  ID_MIR_SUBMITTAL_CODE: "MIR",
+  ID_RFI_SUBMITTAL_CODE: "RFI",
+  ID_TS_SUBMITTAL_CODE: "TS",
+  ID_EI_SUBMITTAL_CODE: "EI",
+  ID_NCR_SUBMITTAL_CODE: "NCR",
+  ID_LTR_SUBMITTAL_CODE: "LTR",
+  ID_HSE_SUBMITTAL_CODE: "HSE",
+  ID_BOQ_SUBMITTAL_CODE: "BOQ",
+};
+
+export const SUBMITTAL_URLS = {
+  [SUBMITTAL_CODES.ID_SD_SUBMITTAL_CODE]: "/InternalReviewer/SDInternalReview/",
+  [SUBMITTAL_CODES.ID_MS_SUBMITTAL_CODE]: "/InternalReviewer/MSlnternalReview/",
+  [SUBMITTAL_CODES.ID_MIR_SUBMITTAL_CODE]:
+    "/InternalReviewer/MIRSubmittalReview/",
+  [SUBMITTAL_CODES.ID_WIR_SUBMITTAL_CODE]:
+    "/InternalReviewer/WIRlnternalReview/",
+  [SUBMITTAL_CODES.ID_DPU_SUBMITTAL_CODE]: "/DailyProgress/Action/",
+  [SUBMITTAL_CODES.ID_EI_SUBMITTAL_CODE]:
+    "/InternalReviewer/EISubmittalReview/",
+  [SUBMITTAL_CODES.ID_RFI_SUBMITTAL_CODE]:
+    "/InternalReviewer/RFISubmittalReview/",
+  [SUBMITTAL_CODES.ID_NCR_SUBMITTAL_CODE]:
+    "/InternalReviewer/NCRSubmittalReview/",
+  [SUBMITTAL_CODES.ID_LTR_SUBMITTAL_CODE]: "/InternalReviewer/LetterReview/",
+  [SUBMITTAL_CODES.ID_TS_SUBMITTAL_CODE]: "/InternalReviewer/TSubmittalReview/",
+};

@@ -1,5 +1,7 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { User, Bot, ArrowRight } from "lucide-react";
+import { SUBMITTAL_CODES, SUBMITTAL_URLS } from "./constant";
+import $ from "jquery";
 
 // Separate TypewriterText component
 const TypewriterText = ({ text, onComplete }) => {
@@ -121,16 +123,26 @@ const DataModal = ({
   isOpen,
   onClose,
   chatbotData,
-  sampleData,
+  items,
   activeTab,
   setActiveTab,
+  userName,
+  loader,
 }) => {
   if (!isOpen) return null;
 
   const tabs = [
-    { id: "Daily Progress", label: "Daily Progress" },
     { id: "pending", label: "Pending" },
-    { id: "completed", label: "Completed" },
+    { id: SUBMITTAL_CODES.ID_DPU_SUBMITTAL_CODE, label: "DPU" },
+    { id: SUBMITTAL_CODES.ID_SD_SUBMITTAL_CODE, label: "SD" },
+    { id: SUBMITTAL_CODES.ID_MS_SUBMITTAL_CODE, label: "MS" },
+    { id: SUBMITTAL_CODES.ID_MIR_SUBMITTAL_CODE, label: "MIR" },
+    { id: SUBMITTAL_CODES.ID_WIR_SUBMITTAL_CODE, label: "WIR" },
+    { id: SUBMITTAL_CODES.ID_TS_SUBMITTAL_CODE, label: "TS" },
+    { id: SUBMITTAL_CODES.ID_RFI_SUBMITTAL_CODE, label: "RFI" },
+    { id: SUBMITTAL_CODES.ID_LTR_SUBMITTAL_CODE, label: "LTR" },
+    { id: SUBMITTAL_CODES.ID_EI_SUBMITTAL_CODE, label: "EI" },
+    { id: SUBMITTAL_CODES.ID_NCR_SUBMITTAL_CODE, label: "NCR" },
   ];
 
   return (
@@ -181,123 +193,212 @@ const DataModal = ({
           X
         </button>
       </div>
-
-      <div
-        style={{
-          display: "flex",
-          backgroundColor: "#f5f5f5",
-          padding: "10px",
-          gap: "10px",
-          position: "sticky",
-          top: "46px",
-          zIndex: 1,
-        }}
-      >
-        {tabs.map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            style={{
-              padding: "8px 16px",
-              border: "none",
-              borderRadius: "20px",
-              cursor: "pointer",
-              backgroundColor:
-                activeTab === tab.id ? "rgb(56, 20, 68)" : "#fff",
-              color: activeTab === tab.id ? "#fff" : "#333",
-              fontWeight: activeTab === tab.id ? "bold" : "normal",
-              boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-              transition: "all 0.3s ease",
-            }}
-          >
-            {tab.label}
-            <span
+      {loader ? (
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            height: "90%",
+          }}
+        >
+          <div style={{ position: "relative" }}>
+            <div
               style={{
-                marginLeft: "5px",
-                backgroundColor:
-                  activeTab === tab.id ? "#fff" : "rgb(56, 20, 68)",
-                color: activeTab === tab.id ? "rgb(56, 20, 68)" : "#fff",
-                padding: "2px 6px",
-                borderRadius: "10px",
-                fontSize: "12px",
+                width: "48px",
+                height: "48px",
+                borderRadius: "50%",
+                border: "4px solid #E9D5FF",
               }}
-            >
-              {
-                sampleData.filter((data) =>
-                  tab.id === "all"
-                    ? true
-                    : tab.id === "pending"
-                    ? !data.completed
-                    : data.completed
-                ).length
-              }
-            </span>
-          </button>
-        ))}
-      </div>
-
-      <p>{chatbotData.loginUser}</p>
-
-      {sampleData
-        .filter((data) =>
-          activeTab === "all"
-            ? true
-            : activeTab === "pending"
-            ? !data.completed
-            : data.completed
-        )
-        .map((data) => (
-          <div
-            key={data.id}
+            />
+            <div
+              style={{
+                width: "48px",
+                height: "48px",
+                borderRadius: "50%",
+                border: "4px solid rgb(56, 20, 68)",
+                borderTopColor: "transparent",
+                position: "absolute",
+                top: 0,
+                animation: "spin 1s linear infinite",
+              }}
+            />
+          </div>
+          <span
             style={{
-              border: "1px solid #ddd",
-              borderRadius: "5px",
-              padding: "10px",
-              margin: "10px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              cursor: "pointer",
-              transition: "background-color 0.3s ease",
-              backgroundColor: data.completed ? "#f8f9fa" : "#fff",
+              marginTop: "16px",
+              fontSize: "18px",
+              color: "rgb(56, 20, 68)",
+              animation: "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
             }}
           >
-            <div style={{ textAlign: "left" }}>
-              <h3 style={{ margin: "0 0 5px 0", fontSize: "16px" }}>
-                {data.title}
-              </h3>
-              <p style={{ margin: 0, fontSize: "14px", color: "#666" }}>
-                {data.content}
-              </p>
-              {data.completed && (
+            Loading...
+          </span>
+          <style>
+            {`
+            @keyframes spin {
+              from {
+                transform: rotate(0deg);
+              }
+              to {
+                transform: rotate(360deg);
+              }
+            }
+            @keyframes pulse {
+              0%, 100% {
+                opacity: 1;
+              }
+              50% {
+                opacity: .5;
+              }
+            }
+          `}
+          </style>
+        </div>
+      ) : (
+        <>
+          <div
+            style={{
+              display: "flex",
+              backgroundColor: "#f5f5f5",
+              padding: "10px",
+              gap: "10px",
+              position: "sticky",
+              top: "46px",
+              zIndex: 1,
+              maxWidth: "100%",
+              overflowX: "scroll",
+            }}
+          >
+            {tabs.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => {
+                  setActiveTab(tab.id);
+                }}
+                style={{
+                  padding: "8px 16px",
+                  border: "none",
+                  borderRadius: "20px",
+                  cursor: "pointer",
+                  backgroundColor:
+                    activeTab === tab.id ? "rgb(56, 20, 68)" : "#fff",
+                  color: activeTab === tab.id ? "#fff" : "#333",
+                  fontWeight: activeTab === tab.id ? "bold" : "normal",
+                  boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+                  transition: "all 0.3s ease",
+                }}
+              >
+                {tab.label}
                 <span
                   style={{
-                    fontSize: "12px",
-                    color: "#28a745",
-                    backgroundColor: "#e8f5e9",
+                    marginLeft: "5px",
+                    backgroundColor:
+                      activeTab === tab.id ? "#fff" : "rgb(56, 20, 68)",
+                    color: activeTab === tab.id ? "rgb(56, 20, 68)" : "#fff",
                     padding: "2px 6px",
                     borderRadius: "10px",
-                    marginTop: "5px",
-                    display: "inline-block",
+                    fontSize: "12px",
                   }}
                 >
-                  Completed
+                  {items && items[tab.id] ? items[tab.id].length : 0}
                 </span>
-              )}
-            </div>
-            <ArrowRight size={20} />
+              </button>
+            ))}
           </div>
-        ))}
+
+          <p>{userName}</p>
+
+          {items && items[activeTab] && items[activeTab].length > 0 ? (
+            items[activeTab].map((data) => (
+              <a
+                key={data.SubmittalID}
+                href={`${SUBMITTAL_URLS[data.SubmittalType]}${
+                  data.SubmittalApproverID
+                }`}
+                style={{
+                  textDecoration: "none",
+                  color: "inherit",
+                  cursor: "pointer",
+                  all: "unset",
+                }}
+              >
+                <div
+                  style={{
+                    border: "1px solid #ddd",
+                    borderRadius: "5px",
+                    padding: "10px",
+                    margin: "10px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    cursor: "pointer",
+                    transition: "background-color 0.3s ease",
+                    backgroundColor: "#fff",
+                  }}
+                >
+                  <div style={{ textAlign: "left", width: "92%" }}>
+                    <h3 style={{ margin: "0 0 5px 0", fontSize: "16px" }}>
+                      {data.SubmittalRefNo}
+                    </h3>
+                    <p style={{ margin: 0, fontSize: "14px", color: "#666" }}>
+                      {data.Description}
+                    </p>
+                  </div>
+                  <ArrowRight width={20} height={20} />
+                </div>
+              </a>
+            ))
+          ) : (
+            <div
+              style={{
+                border: "1px solid #ddd",
+                borderRadius: "5px",
+                padding: "10px",
+                margin: "10px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                cursor: "pointer",
+                transition: "background-color 0.3s ease",
+                backgroundColor: "#fff",
+                height: "70%",
+              }}
+            >
+              <h3 style={{ textAlign: "center" }}>No pending list</h3>
+            </div>
+          )}
+        </>
+      )}
     </div>
   );
 };
 
-const Chatbot = ({ apiEndpoint }) => {
+const Chatbot = ({ apiEndpoint, pendingListEndpoint }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [userInput, setUserInput] = useState("");
-  const [activeTab, setActiveTab] = useState("all");
+  const [activeTab, setActiveTab] = useState("pending");
+  const [userName, setUserName] = useState("");
   const [chatHistory, setChatHistory] = useState([]);
+  const [pendingList, setPendingList] = useState({
+    pending: [],
+    [SUBMITTAL_CODES.ID_SD_SUBMITTAL_CODE]: [],
+    [SUBMITTAL_CODES.ID_MS_SUBMITTAL_CODE]: [],
+    [SUBMITTAL_CODES.ID_MIR_SUBMITTAL_CODE]: [],
+    [SUBMITTAL_CODES.ID_WIR_SUBMITTAL_CODE]: [],
+    [SUBMITTAL_CODES.ID_TS_SUBMITTAL_CODE]: [],
+    [SUBMITTAL_CODES.ID_RFI_SUBMITTAL_CODE]: [],
+    [SUBMITTAL_CODES.ID_DPU_SUBMITTAL_CODE]: [],
+    [SUBMITTAL_CODES.ID_LTR_SUBMITTAL_CODE]: [],
+    [SUBMITTAL_CODES.ID_EI_SUBMITTAL_CODE]: [],
+    [SUBMITTAL_CODES.ID_NCR_SUBMITTAL_CODE]: [],
+  });
+  const [totalPendingList, setTotalPendingList] = useState(0);
+  // const [totalData, setTotalData] = useState([]);
+  const [listLoading, setListLoading] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [chatbotData, setChatbotData] = useState({
     topBorderColor: "#007bff",
     chatBotColor: "#fff",
@@ -309,36 +410,77 @@ const Chatbot = ({ apiEndpoint }) => {
     notificationCount: 0,
   });
 
-  // Sample data with completed status
-  const sampleData = [
-    {
-      id: 1,
-      title: "Task 1",
-      content: "This is the content for task 1.",
-      completed: false,
-    },
-    {
-      id: 2,
-      title: "Task 2",
-      content: "This is the content for task 2.",
-      completed: true,
-    },
-    {
-      id: 3,
-      title: "Task 3",
-      content: "This is the content for task 3.",
-      completed: false,
-    },
-    {
-      id: 4,
-      title: "Task 4",
-      content: "This is the content for task 4.",
-      completed: true,
-    },
-  ];
-
   const chatContainerRef = useRef(null);
   const inputRef = useRef(null);
+
+  const fetchPendingData = async () => {
+    try {
+      return await new Promise((resolve, reject) => {
+        $.ajax({
+          url: "/Common/GetAllActionPendingListJSON",
+          type: "POST",
+          dataType: "json",
+          success: function (response) {
+            resolve(response);
+          },
+          error: function (xhr, status, error) {
+            console.error("AJAX Error:", error);
+            reject(error);
+          },
+        });
+      });
+    } catch (error) {
+      console.error("Error fetching pending data:", error);
+      setListLoading(false);
+      throw error;
+    }
+  };
+
+  const processPendingData = (response) => {
+    if (!response) return;
+
+    let tempResult = { pending: response };
+
+    // Reverse lookup object to match values
+    const reversedSubmittalCodes = Object.fromEntries(
+      Object.entries(SUBMITTAL_CODES).map(([key, value]) => [value, key])
+    );
+
+    // Initialize submittal code categories
+    Object.keys(SUBMITTAL_CODES).forEach((key) => {
+      tempResult[SUBMITTAL_CODES[key]] = [];
+    });
+
+    // Single loop to categorize items
+    response.forEach((item) => {
+      const submittalKey = reversedSubmittalCodes[item.SubmittalType];
+
+      if (submittalKey) {
+        tempResult[SUBMITTAL_CODES[submittalKey]].push(item);
+      } else {
+        console.warn(`Unknown SubmittalType: ${item.SubmittalType}`);
+      }
+    });
+
+    setPendingList(tempResult);
+    setTimeout(() => {
+      setListLoading(false);
+    }, 2000);
+  };
+
+  const fetchPendingList = useCallback(async () => {
+    try {
+      setListLoading(true);
+      const response = await fetchPendingData();
+      if (response) {
+        setTotalPendingList(response.length);
+        // setTotalData(response);
+        processPendingData(response);
+      }
+    } catch (error) {
+      console.error("Error in fetchPendingList:", error);
+    }
+  }, []);
 
   useEffect(() => {
     const fetchChatbotConfig = async () => {
@@ -372,7 +514,32 @@ const Chatbot = ({ apiEndpoint }) => {
       }
     };
 
+    const fetchSessionData = async () => {
+      try {
+        $.ajax({
+          url: "/Home/GetSessionValues/",
+          type: "POST",
+          dataType: "json",
+          success: async function (response) {
+            if (!response["Username"]) {
+              setIsLoggedIn(false);
+            } else {
+              setIsLoggedIn(true);
+              setUserName(response["Username"]);
+            }
+          },
+          error: function (xhr, status, error) {
+            console.error("AJAX Error:", error);
+            setIsLoggedIn(false);
+          },
+        });
+      } catch (error) {
+        setIsLoggedIn(false);
+        console.error("Failed to fetch chatbot configuration:", error);
+      }
+    };
     fetchChatbotConfig();
+    fetchSessionData();
   }, [apiEndpoint]);
 
   useEffect(() => {
@@ -392,8 +559,12 @@ const Chatbot = ({ apiEndpoint }) => {
   };
 
   const toggleModal = (e) => {
+    if (!isLoggedIn) return; // Exit early if not logged in
+  
     e.stopPropagation();
-    setIsModalOpen(!isModalOpen);
+  
+    setIsModalOpen((prev) => !prev); // Use functional state update
+    fetchPendingList();
   };
 
   const handleSendMessage = async () => {
@@ -595,9 +766,10 @@ const Chatbot = ({ apiEndpoint }) => {
           isOpen={isModalOpen}
           onClose={toggleModal}
           chatbotData={chatbotData}
-          sampleData={sampleData}
+          items={pendingList}
           activeTab={activeTab}
           setActiveTab={setActiveTab}
+          loader={listLoading}
         />
       )}
 
@@ -663,7 +835,7 @@ const Chatbot = ({ apiEndpoint }) => {
               }}
             >
               👤
-              {chatbotData.notificationCount > 0 && (
+              {isLoggedIn && (
                 <div
                   style={{
                     position: "absolute",
@@ -681,12 +853,12 @@ const Chatbot = ({ apiEndpoint }) => {
                     fontWeight: "bold",
                   }}
                 >
-                  {chatbotData.notificationCount}
+                  {totalPendingList}
                 </div>
               )}
             </div>
             <div style={{ fontSize: "14px" }}>
-              {chatbotData.loginUser || "Guest"}
+              {userName ? userName : "Guest"}
             </div>
           </div>
           <div
